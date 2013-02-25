@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Rackspace
+Copyright 2013 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rackspace
+package gorax
 
 import (
 	"bytes"
@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"net/http/httputil"
-	"mime"
 )
 
 type RestError struct {
@@ -36,10 +36,10 @@ func (e *RestError) Error() string {
 }
 
 type RestRequest struct {
-	Method string
-	Path   string
-	Header http.Header
-	Body   RequestBody
+	Method              string
+	Path                string
+	Header              http.Header
+	Body                RequestBody
 	ExpectedStatusCodes []int
 }
 

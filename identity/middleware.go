@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Rackspace
+Copyright 2013 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,31 +17,31 @@ limitations under the License.
 package identity
 
 import (
-	"time"
-	"sync"
-	"rackspace"
 	"fmt"
+	"gorax"
+	"sync"
+	"time"
 )
 
 var (
 	USExpiresFormat = "2006-01-02T15:04:05.000-07:00"
 	UKExpiresFormat = "2006-01-02T15:04:05.000Z"
-	ExpireDelta = time.Duration(5) * time.Minute
+	ExpireDelta     = time.Duration(5) * time.Minute
 )
 
 type KeystoneAuthMiddleware struct {
-	tenantId			 string
-	token					 string
-	expires				 time.Time
+	tenantId       string
+	token          string
+	expires        time.Time
 	keystoneClient *KeystoneClient
-	refreshLock		 sync.Mutex
+	refreshLock    sync.Mutex
 }
 
 func MakeKeystonePasswordMiddleware(region string, username string, password string) *KeystoneAuthMiddleware {
 	m := &KeystoneAuthMiddleware{
 		keystoneClient: MakePasswordKeystoneClient(region, username, password),
-		expires: time.Time{},
-		refreshLock: sync.Mutex{},
+		expires:        time.Time{},
+		refreshLock:    sync.Mutex{},
 	}
 	m.keystoneClient.SetDebug(true)
 	return m
@@ -50,8 +50,8 @@ func MakeKeystonePasswordMiddleware(region string, username string, password str
 func MakeKeystoneAPIKeyMiddleware(region string, username string, apiKey string) *KeystoneAuthMiddleware {
 	m := &KeystoneAuthMiddleware{
 		keystoneClient: MakeAPIKeyKeystoneClient(region, username, apiKey),
-		expires: time.Time{},
-		refreshLock: sync.Mutex{},
+		expires:        time.Time{},
+		refreshLock:    sync.Mutex{},
 	}
 	m.keystoneClient.SetDebug(true)
 	return m

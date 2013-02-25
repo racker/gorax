@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Rackspace
+Copyright 2013 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 package identity
 
 import (
-	"rackspace"
+	"gorax"
 	"net/http"
 )
 
@@ -119,7 +119,7 @@ func (k *KeystoneClient) Authenticate() (*AuthResponse, error) {
 		Body: &rackspace.JSONRequestBody{
 			Object: creds,
 		},
-		ExpectedStatusCodes: []int {http.StatusOK},
+		ExpectedStatusCodes: []int{http.StatusOK},
 	}
 
 	resp, err := k.client.PerformRequest(restReq)
@@ -136,7 +136,7 @@ func (k *KeystoneClient) Authenticate() (*AuthResponse, error) {
 
 func MakePasswordKeystoneClient(url string, username string, password string) *KeystoneClient {
 	return &KeystoneClient{
-		client: rackspace.MakeRestClient(url),
+		client:   rackspace.MakeRestClient(url),
 		username: username,
 		password: password,
 	}
@@ -144,7 +144,7 @@ func MakePasswordKeystoneClient(url string, username string, password string) *K
 
 func MakeAPIKeyKeystoneClient(url string, username string, apiKey string) *KeystoneClient {
 	return &KeystoneClient{
-		client: rackspace.MakeRestClient(url),
+		client:   rackspace.MakeRestClient(url),
 		username: username,
 		apiKey:   apiKey,
 	}

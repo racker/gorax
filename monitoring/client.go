@@ -1,5 +1,5 @@
 /*
-Copyright 2012 Rackspace
+Copyright 2013 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ limitations under the License.
 package monitoring
 
 import (
-	"rackspace"
-	"rackspace/identity"
+	"gorax"
+	"gorax/identity"
 	"net/http"
 )
 
 type MonitoringClient struct {
-	client   *rackspace.RestClient
+	client *rackspace.RestClient
 }
 
 func (m *MonitoringClient) SetDebug(debug bool) {
@@ -36,9 +36,9 @@ func (m *MonitoringClient) ListEntities() ([]Entity, error) {
 
 	for true {
 		restReq := &rackspace.RestRequest{
-			Method: "GET",
-			Path:   "/entities",
-			ExpectedStatusCodes: []int {http.StatusOK},
+			Method:              "GET",
+			Path:                "/entities",
+			ExpectedStatusCodes: []int{http.StatusOK},
 		}
 
 		if nextMarker != nil {
@@ -72,9 +72,9 @@ func (m *MonitoringClient) ListEntities() ([]Entity, error) {
 
 func (m *MonitoringClient) GetEntity(entityId string) (*Entity, error) {
 	restReq := &rackspace.RestRequest{
-		Method: "GET",
-		Path:   "/entities/" + entityId,
-		ExpectedStatusCodes: []int {http.StatusOK},
+		Method:              "GET",
+		Path:                "/entities/" + entityId,
+		ExpectedStatusCodes: []int{http.StatusOK},
 	}
 
 	resp, err := m.client.PerformRequest(restReq)
@@ -94,9 +94,9 @@ func (m *MonitoringClient) ListChecks(entityId string) ([]Check, error) {
 
 	for true {
 		restReq := &rackspace.RestRequest{
-			Method: "GET",
-			Path:   "/entities/" + entityId + "/checks",
-			ExpectedStatusCodes: []int {http.StatusOK},
+			Method:              "GET",
+			Path:                "/entities/" + entityId + "/checks",
+			ExpectedStatusCodes: []int{http.StatusOK},
 		}
 
 		if nextMarker != nil {
@@ -128,12 +128,11 @@ func (m *MonitoringClient) ListChecks(entityId string) ([]Check, error) {
 	return checks, nil
 }
 
-
 func MakePasswordMonitoringClient(url string, authurl string, username string, password string) *MonitoringClient {
 	m := &MonitoringClient{
 		client: rackspace.MakeRestClient(url),
 	}
-	m.client.RequestMiddlewares = []rackspace.RequestMiddleware {
+	m.client.RequestMiddlewares = []rackspace.RequestMiddleware{
 		identity.MakeKeystonePasswordMiddleware(authurl, username, password),
 	}
 	return m
@@ -143,7 +142,7 @@ func MakeAPIKeyMonitoringClient(url string, authurl string, username string, api
 	m := &MonitoringClient{
 		client: rackspace.MakeRestClient(url),
 	}
-	m.client.RequestMiddlewares = []rackspace.RequestMiddleware {
+	m.client.RequestMiddlewares = []rackspace.RequestMiddleware{
 		identity.MakeKeystoneAPIKeyMiddleware(authurl, username, apiKey),
 	}
 	return m
