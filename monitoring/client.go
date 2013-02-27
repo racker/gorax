@@ -17,13 +17,13 @@ limitations under the License.
 package monitoring
 
 import (
-	"gorax"
-	"gorax/identity"
+	"github.com/racker/gorax"
+	"github.com/racker/gorax/identity"
 	"net/http"
 )
 
 type MonitoringClient struct {
-	client *rackspace.RestClient
+	client *gorax.RestClient
 }
 
 func (m *MonitoringClient) SetDebug(debug bool) {
@@ -35,7 +35,7 @@ func (m *MonitoringClient) ListEntities() ([]Entity, error) {
 	var nextMarker *string
 
 	for true {
-		restReq := &rackspace.RestRequest{
+		restReq := &gorax.RestRequest{
 			Method:              "GET",
 			Path:                "/entities",
 			ExpectedStatusCodes: []int{http.StatusOK},
@@ -71,7 +71,7 @@ func (m *MonitoringClient) ListEntities() ([]Entity, error) {
 }
 
 func (m *MonitoringClient) GetEntity(entityId string) (*Entity, error) {
-	restReq := &rackspace.RestRequest{
+	restReq := &gorax.RestRequest{
 		Method:              "GET",
 		Path:                "/entities/" + entityId,
 		ExpectedStatusCodes: []int{http.StatusOK},
@@ -93,7 +93,7 @@ func (m *MonitoringClient) ListChecks(entityId string) ([]Check, error) {
 	var nextMarker *string
 
 	for true {
-		restReq := &rackspace.RestRequest{
+		restReq := &gorax.RestRequest{
 			Method:              "GET",
 			Path:                "/entities/" + entityId + "/checks",
 			ExpectedStatusCodes: []int{http.StatusOK},
@@ -130,9 +130,9 @@ func (m *MonitoringClient) ListChecks(entityId string) ([]Check, error) {
 
 func MakePasswordMonitoringClient(url string, authurl string, username string, password string) *MonitoringClient {
 	m := &MonitoringClient{
-		client: rackspace.MakeRestClient(url),
+		client: gorax.MakeRestClient(url),
 	}
-	m.client.RequestMiddlewares = []rackspace.RequestMiddleware{
+	m.client.RequestMiddlewares = []gorax.RequestMiddleware{
 		identity.MakeKeystonePasswordMiddleware(authurl, username, password),
 	}
 	return m
@@ -140,9 +140,9 @@ func MakePasswordMonitoringClient(url string, authurl string, username string, p
 
 func MakeAPIKeyMonitoringClient(url string, authurl string, username string, apiKey string) *MonitoringClient {
 	m := &MonitoringClient{
-		client: rackspace.MakeRestClient(url),
+		client: gorax.MakeRestClient(url),
 	}
-	m.client.RequestMiddlewares = []rackspace.RequestMiddleware{
+	m.client.RequestMiddlewares = []gorax.RequestMiddleware{
 		identity.MakeKeystoneAPIKeyMiddleware(authurl, username, apiKey),
 	}
 	return m

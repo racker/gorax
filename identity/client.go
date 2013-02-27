@@ -17,12 +17,12 @@ limitations under the License.
 package identity
 
 import (
-	"gorax"
+	"github.com/racker/gorax"
 	"net/http"
 )
 
 var (
-	ErrMissingCredential = &rackspace.RestError{"Either a username or an apiKey must be supplied"}
+	ErrMissingCredential = &gorax.RestError{"Either a username or an apiKey must be supplied"}
 )
 
 var (
@@ -84,7 +84,7 @@ type KeystoneClient struct {
 	username string
 	password string
 	apiKey   string
-	client   *rackspace.RestClient
+	client   *gorax.RestClient
 }
 
 func (k *KeystoneClient) getCredentials() (interface{}, error) {
@@ -113,10 +113,10 @@ func (k *KeystoneClient) Authenticate() (*AuthResponse, error) {
 		return nil, err
 	}
 
-	restReq := &rackspace.RestRequest{
+	restReq := &gorax.RestRequest{
 		Method: "POST",
 		Path:   "/tokens",
-		Body: &rackspace.JSONRequestBody{
+		Body: &gorax.JSONRequestBody{
 			Object: creds,
 		},
 		ExpectedStatusCodes: []int{http.StatusOK},
@@ -136,7 +136,7 @@ func (k *KeystoneClient) Authenticate() (*AuthResponse, error) {
 
 func MakePasswordKeystoneClient(url string, username string, password string) *KeystoneClient {
 	return &KeystoneClient{
-		client:   rackspace.MakeRestClient(url),
+		client:   gorax.MakeRestClient(url),
 		username: username,
 		password: password,
 	}
@@ -144,7 +144,7 @@ func MakePasswordKeystoneClient(url string, username string, password string) *K
 
 func MakeAPIKeyKeystoneClient(url string, username string, apiKey string) *KeystoneClient {
 	return &KeystoneClient{
-		client:   rackspace.MakeRestClient(url),
+		client:   gorax.MakeRestClient(url),
 		username: username,
 		apiKey:   apiKey,
 	}

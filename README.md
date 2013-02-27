@@ -8,8 +8,8 @@
 package main
 
 import (
-  "rackspace/monitoring"
-  "rackspace/identity"
+  "github.com/racker/gorax/monitoring"
+  "github.com/racker/gorax/identity"
   "fmt"
 )
 

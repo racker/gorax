@@ -18,7 +18,7 @@ package identity
 
 import (
 	"fmt"
-	"gorax"
+	"github.com/racker/gorax"
 	"sync"
 	"time"
 )
@@ -57,7 +57,7 @@ func MakeKeystoneAPIKeyMiddleware(region string, username string, apiKey string)
 	return m
 }
 
-func (m *KeystoneAuthMiddleware) HandleRequest(req *rackspace.RestRequest) (*rackspace.RestRequest, error) {
+func (m *KeystoneAuthMiddleware) HandleRequest(req *gorax.RestRequest) (*gorax.RestRequest, error) {
 	m.refreshLock.Lock()
 	defer m.refreshLock.Unlock()
 
