@@ -22,10 +22,12 @@ import (
 	"net/http"
 )
 
+// A MonitoringClient object exists for each outstanding connection to the Rackspace Cloud Monitoring APIs.
 type MonitoringClient struct {
 	client *gorax.RestClient
 }
 
+// SetDebug() configures whether or not the monitoring client works in debug-mode (true) or not (false).
 func (m *MonitoringClient) SetDebug(debug bool) {
 	m.client.SetDebug(debug)
 }
@@ -88,11 +90,14 @@ func (m *MonitoringClient) GetEntity(entityId string) (*Entity, error) {
 	return entity, err
 }
 
+// ListChecks() retrieves a list of Check objects configured for a given entity.
+// This function abstracts pagination of the results for you.
+// If successful, the error result will always be nil; otherwise, the Check slice will be nil.
 func (m *MonitoringClient) ListChecks(entityId string) ([]Check, error) {
 	checks := make([]Check, 0)
 	var nextMarker *string
 
-	for true {
+	for {
 		restReq := &gorax.RestRequest{
 			Method:              "GET",
 			Path:                "/entities/" + entityId + "/checks",
@@ -128,6 +133,7 @@ func (m *MonitoringClient) ListChecks(entityId string) ([]Check, error) {
 	return checks, nil
 }
 
+// MakePasswordMonitoringClient creates an object representing the monitoring client, with username/password authentication.
 func MakePasswordMonitoringClient(url string, authurl string, username string, password string) *MonitoringClient {
 	m := &MonitoringClient{
 		client: gorax.MakeRestClient(url),

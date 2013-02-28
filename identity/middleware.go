@@ -29,6 +29,9 @@ var (
 	ExpireDelta     = time.Duration(5) * time.Minute
 )
 
+// The KeystoneAuthMiddleware object is a filter through which all requests flow,
+// ensuring that the principal making requests against a Cloud Monitoring account actually
+// has the required privileges to do so.
 type KeystoneAuthMiddleware struct {
 	tenantId       string
 	token          string
@@ -37,6 +40,9 @@ type KeystoneAuthMiddleware struct {
 	refreshLock    sync.Mutex
 }
 
+// MakeKeystonePasswordMiddleware creates a middleware request object to the API to use the Keystone authentication interface.
+// A side-effect of this function is the creation of a Keystone client interface object in debug-mode.
+// This procedure assumes username/password authentication.
 func MakeKeystonePasswordMiddleware(region string, username string, password string) *KeystoneAuthMiddleware {
 	m := &KeystoneAuthMiddleware{
 		keystoneClient: MakePasswordKeystoneClient(region, username, password),
@@ -47,6 +53,9 @@ func MakeKeystonePasswordMiddleware(region string, username string, password str
 	return m
 }
 
+// MakeKeystoneAPIKeyMiddleware creates a middleware request object to the API to use the Keystone authentication interface.
+// A side-effect of this function is the creation of a Keystone client interface object in debug-mode.
+// This procedure assumes you already have a valid API key for the principal making the requests.
 func MakeKeystoneAPIKeyMiddleware(region string, username string, apiKey string) *KeystoneAuthMiddleware {
 	m := &KeystoneAuthMiddleware{
 		keystoneClient: MakeAPIKeyKeystoneClient(region, username, apiKey),
@@ -57,6 +66,12 @@ func MakeKeystoneAPIKeyMiddleware(region string, username string, apiKey string)
 	return m
 }
 
+// This HandleRequest method performs user authentication against a Keystone REST API.
+//
+// If the request has timed out (e.g., as by exceeding its expiry timeout), it returns an error out of hand.  No attempt to use REST resources occurs.
+// Otherwise, if the username and password work for the principal, and the request hasn't timed out, a new expiry timestamp is calculated, thus extending
+// the life of the request.  Additionally, the request receives an X-Auth-Token MIME header appropriate for the principal making the request, and the
+// resource path is "redirected" to that appropriate for the principal's unique set of resources.
 func (m *KeystoneAuthMiddleware) HandleRequest(req *gorax.RestRequest) (*gorax.RestRequest, error) {
 	m.refreshLock.Lock()
 	defer m.refreshLock.Unlock()

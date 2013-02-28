@@ -107,6 +107,7 @@ func (k *KeystoneClient) SetDebug(debug bool) {
 	k.client.SetDebug(debug)
 }
 
+// Authenticate() attempts to verify the principal making the current request actually has the privileges necessary to do so.
 func (k *KeystoneClient) Authenticate() (*AuthResponse, error) {
 	creds, err := k.getCredentials()
 	if err != nil {

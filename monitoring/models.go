@@ -39,6 +39,34 @@ type PaginatedEntityList struct {
 	Metadata PaginationMetadata
 }
 
+// A Check represents a check that the user configures on one of his or her entities.
+// It contains the following fields:
+//
+// The Id field uniquely identifies the check amongst all others belonging to the user.
+//
+// The Label field identifies the check to a human operator.
+//
+// The Type field indicates what kind of check it is.
+//
+// The Details field provides a mapping of detail to detail-specific information.
+//
+// The MonitoringZonesPoll field provides a list of what to poll for this check.
+//
+// The Timeout field indicates how many seconds to wait for a response before the check fails.
+//
+// The Period field tells how frequently to perform the check, in seconds.
+//
+// The TargetAlias field does something; I just don't quite know what it is.
+//
+// The TargetHostname field identifies the host name of that which is being checked.
+//
+// TargetResolver field identifies the domain name resolver scoping the target hostname.
+//
+// The Disabled field is true if the check is disabled for the entity; false otherwise.
+//
+// The Metadata field provides a generic key/value store of miscellaneous bits of information relevant to this check.
+// However, its implementation isn't very efficient at all.  This field is not intended for use as a general purpose
+// key/value store.
 type Check struct {
 	Id                  string                 `json:"id"`
 	Label               *string                `json:"label"`
@@ -54,6 +82,8 @@ type Check struct {
 	Metadata            map[string]interface{} `json:"metadata"`
 }
 
+// A PaginatedCheckList contains a finite subset of the complete set of checks a cloud monitoring user has configured.
+// The Values field contains the array slice representing the set of Check objects.
 type PaginatedCheckList struct {
 	Values   []Check
 	Metadata PaginationMetadata
