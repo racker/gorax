@@ -1,3 +1,5 @@
+// vim: ts=8 sw=8 noet ai
+
 package identity
 
 import (
@@ -9,32 +11,32 @@ import (
 )
 
 const (
-	US_ENDPOINT = "https://identity.api.rackspacecloud.com/v2.0/"
-	UK_ENDPOINT = "https://lon.identity.api.rackspacecloud.com/v2.0/"
+	US_ENDPOINT = "https://identity.api.rackspacecloud.com/v2.0/tokens"
+	UK_ENDPOINT = "https://lon.identity.api.rackspacecloud.com/v2.0/tokens"
 )
 
-// The Identity type encapsulates both the set of credentials used to authenticate
-// against the Rackspace Identity API, as well as the relevant proof of authentication
-// once acquired.
-type Identity struct {
-	username, apiKey, region string
-	isAuthenticated          bool
-	httpClient               *http.Client
-	token, expires           string
-	tenantId, tenantName     string
-	access                   *AccessBody
+// The identity (lower-case i) structure records the username, password, and
+// region for the user's credentials.  In addition, it tracks whether or not
+// the user is authenticated.
+type identity struct {
+	username, password, region string
+	isAuthenticated            bool
+	httpClient                 *http.Client
+	token, expires             string
+	tenantId, tenantName       string
+	access                     *AccessBody
 }
 
 // NewIdentity creates a new set of papers to use for authentication against the Rackspace Identity service.
-// It takes a username and API key as inputs.
-// Specify "" if you intend on specifying username or API key later.
-// Consult with your cloud provider for your username and API key.
+// It takes a username and password as inputs.
+// Specify "" if you intend on specifying username or password later.
+// Consult with your cloud provider for your username and password.
 // The region parameter, if provided, specifies the geographical home for your account.
 // Specify "" for default region (currently US).
-func NewIdentity(userName, key, reg string) *Identity {
-	return &Identity{
+func NewIdentity(userName, pw, reg string) *identity {
+	return &identity{
 		username:   userName,
-		apiKey:     key,
+		password:   pw,
 		region:     strings.ToUpper(reg),
 		httpClient: &http.Client{},
 	}
@@ -42,24 +44,24 @@ func NewIdentity(userName, key, reg string) *Identity {
 
 // SetCredentials may be used to alter the current set of credentials,
 // provided the identity has not yet been authenticated.
-func (id *Identity) SetCredentials(userName, key, reg string) {
+func (id *identity) SetCredentials(userName, pw, reg string) {
 	if !id.isAuthenticated {
 		id.username = userName
-		id.apiKey = key
+		id.password = pw
 		id.region = strings.ToUpper(reg)
 	}
 }
 
 // Username yields the identity's user name string.
 // This string is opaque to gorax.
-func (id *Identity) Username() string {
+func (id *identity) Username() string {
 	return id.username
 }
 
-// ApiKey yields the identity's API key.
+// Password yields the identity's password.
 // This string is opaque to gorax.
-func (id *Identity) ApiKey() string {
-	return id.apiKey
+func (id *identity) Password() string {
+	return id.password
 }
 
 // Region yields the supplied region.
@@ -68,13 +70,13 @@ func (id *Identity) ApiKey() string {
 // will return "LON".
 // If no region was set, "" is returned.
 // In all other respects, this string is opaque to gorax.
-func (id *Identity) Region() string {
+func (id *identity) Region() string {
 	return id.region
 }
 
 // Token yields the authentication token.
 // If not authenticated, an error is returned.
-func (id *Identity) Token() (string, error) {
+func (id *identity) Token() (string, error) {
 	if !id.IsAuthenticated() {
 		return "", fmt.Errorf("Not authenticated")
 	}
@@ -83,7 +85,7 @@ func (id *Identity) Token() (string, error) {
 
 // Expires yields the token's expiration timestamp in ISO8601 format.
 // If not authenticated, an error is returned.
-func (id *Identity) Expires() (string, error) {
+func (id *identity) Expires() (string, error) {
 	if !id.IsAuthenticated() {
 		return "", fmt.Errorf("Not authentication")
 	}
@@ -92,7 +94,7 @@ func (id *Identity) Expires() (string, error) {
 
 // TenantId yields the tenant ID.
 // If not authenticated, an error is returned.
-func (id *Identity) TenantId() (string, error) {
+func (id *identity) TenantId() (string, error) {
 	if !id.IsAuthenticated() {
 		return "", fmt.Errorf("Not authenticated")
 	}
@@ -101,7 +103,7 @@ func (id *Identity) TenantId() (string, error) {
 
 // TenantName yields the tenant name.
 // If not authenticated, an error is returned.
-func (id *Identity) TenantName() (string, error) {
+func (id *identity) TenantName() (string, error) {
 	if !id.IsAuthenticated() {
 		return "", fmt.Errorf("Not authenticated")
 	}
@@ -109,7 +111,7 @@ func (id *Identity) TenantName() (string, error) {
 }
 
 // AuthEndpoint yields which API endpoint will be used to perform the authentication.
-func (id *Identity) AuthEndpoint() (ep string) {
+func (id *identity) AuthEndpoint() (ep string) {
 	ep = US_ENDPOINT
 	if id.region == "LON" {
 		ep = UK_ENDPOINT
@@ -120,7 +122,7 @@ func (id *Identity) AuthEndpoint() (ep string) {
 // IsAuthenticated reports on whether or not the credentials have been verified.
 // When a new identity is created, by default it remains unauthenticated.
 // Use the Authenticate() method to authenticate.
-func (id *Identity) IsAuthenticated() bool {
+func (id *identity) IsAuthenticated() bool {
 	return id.isAuthenticated
 }
 
@@ -162,7 +164,9 @@ type CatalogEntry struct {
 
 // EntryEndpoint encapsulates how to get to the API of some service.
 type EntryEndpoint struct {
-	Region, TenantId, PublicURL, InternalURL string
+	Region, TenantId                    string
+	PublicURL, InternalURL              string
+	VersionId, VersionInfo, VersionList string
 }
 
 // User encapsulates the user credentials, and provides visibility in what
@@ -180,7 +184,7 @@ type Role struct {
 
 // ServiceCatalog yields the array of services available to the user.
 // An error is returned if not authenticated.
-func (id *Identity) ServiceCatalog() ([]CatalogEntry, error) {
+func (id *identity) ServiceCatalog() ([]CatalogEntry, error) {
 	if !id.IsAuthenticated() {
 		return nil, fmt.Errorf("Not authenticated")
 	}
@@ -189,16 +193,46 @@ func (id *Identity) ServiceCatalog() ([]CatalogEntry, error) {
 
 // Roles yields a slice (potentially zero-length) of roles.
 // An error is returned if not authenticated.
-func (id *Identity) Roles() ([]Role, error) {
+func (id *identity) Roles() ([]Role, error) {
 	if !id.IsAuthenticated() {
 		return nil, fmt.Errorf("Not authenticated")
 	}
 	return id.access.Access.User.Roles, nil
 }
 
+// These odd type definitions are required due to a known bug (more like an
+// uncertainty in the semantics of the library) found in the encoding/json package.
+// See http://golang.org/pkg/encoding/json/#pkg-note-BUG
+
+type AuthContainer struct {
+	Auth Auth `json:"auth"`
+}
+
+type Auth struct {
+	PasswordCredentials PasswordCredentials `json:"passwordCredentials"`
+}
+
+type PasswordCredentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // Authenticate attempts to verify this Identity object's credentials.
-func (id *Identity) Authenticate() error {
-	req, err := http.NewRequest("GET", id.AuthEndpoint(), nil)
+func (id *identity) Authenticate() error {
+	creds := &AuthContainer{
+		Auth: Auth{
+			PasswordCredentials: PasswordCredentials{
+				Username: id.username,
+				Password: id.password,
+			},
+		},
+	}
+	bodyContent, err := json.Marshal(creds)
+	if err != nil {
+		return err
+	}
+	body := strings.NewReader(string(bodyContent))
+	req, err := http.NewRequest("POST", id.AuthEndpoint(), body)
 	if err != nil {
 		return err
 	}
@@ -209,10 +243,11 @@ func (id *Identity) Authenticate() error {
 		return err
 	}
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Expected 200 response; got %d", resp.StatusCode)
+		return fmt.Errorf("Expected 200 response; got %s", resp.Status)
 	}
 	defer resp.Body.Close()
 	jsonContainer, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		return err
 	}
@@ -233,6 +268,6 @@ func (id *Identity) Authenticate() error {
 // You normally wouldn't need to set this, as the net/http package makes reasonable
 // choices on its own.  Customized transports are useful, however, if extra logging
 // is required, or if you're using unit tests to isolate and verify correct behavior.
-func (id *Identity) UseClient(c *http.Client) {
+func (id *identity) UseClient(c *http.Client) {
 	id.httpClient = c
 }

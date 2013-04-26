@@ -1,3 +1,5 @@
+// vim: ts=8 sw=8 noet ai
+
 package identity
 
 import (
@@ -9,7 +11,7 @@ import (
 
 const (
 	USERNAME    = "joe_user"
-	APIKEY      = "joe_user_api_key_opaque_string"
+	PASSWORD    = "joe_user_api_key_opaque_string"
 	TOKEN       = "aaaaa-bbbbb-ccccc-dddd"
 	EXPIRES     = "2012-04-13T13:15:00.000-05:00"
 	TENANT_ID   = "12345"
@@ -117,13 +119,13 @@ const (
 )
 
 func TestNewIdentity(t *testing.T) {
-	id := NewIdentity(USERNAME, APIKEY, "")
+	id := NewIdentity(USERNAME, PASSWORD, "")
 	if id.Username() != USERNAME {
 		t.Error("NewIdentity: expected properly set username")
 		return
 	}
-	if id.ApiKey() != APIKEY {
-		t.Error("NewIdentity: expected API key to be set")
+	if id.Password() != PASSWORD {
+		t.Error("NewIdentity: expected password to be set")
 		return
 	}
 	if id.Region() != "" {
@@ -139,7 +141,7 @@ func TestNewIdentity(t *testing.T) {
 		return
 	}
 
-	id2 := NewIdentity(USERNAME, APIKEY, "lon")
+	id2 := NewIdentity(USERNAME, PASSWORD, "lon")
 	if id2.AuthEndpoint() != UK_ENDPOINT {
 		t.Error("NewIdentity: LON region must use UK endpoint")
 		return
@@ -180,7 +182,7 @@ func TestAuthenticationWithTenant(t *testing.T) {
 	transport := &testTransport{
 		response: SUCCESSFUL_LOGIN_RESPONSE_WITH_TENANT_IDS,
 	}
-	id := NewIdentity(USERNAME, APIKEY, "")
+	id := NewIdentity(USERNAME, PASSWORD, "")
 	id.UseClient(&http.Client{
 		Transport: transport,
 	})
@@ -218,7 +220,7 @@ func TestAuthentication(t *testing.T) {
 	transport := &testTransport{
 		response: SUCCESSFUL_LOGIN_RESPONSE,
 	}
-	id := NewIdentity(USERNAME, APIKEY, "")
+	id := NewIdentity(USERNAME, PASSWORD, "")
 	id.UseClient(&http.Client{
 		Transport: transport,
 	})
