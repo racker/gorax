@@ -153,6 +153,48 @@ const (
 		}
 	]
 }`
+
+	TWO_FLAVORS = `{
+	"flavors": [
+		{
+			"OS-FLV-DISABLED:disabled": false,
+			"disk": 40,
+			"id": "3",
+			"links": [
+				{
+					"href": "https://dfw.servers.api.rackspacecloud.com/v2/010101/flavors/3",
+					"ref": "self"
+				}, {
+					"href": "https://dfw.servers.api.rackspacecloud.com/010101/flavors/3",
+					"ref": "bookmark"
+				}
+			],
+			"name": "1GB Standard Instance",
+			"ram": 1024, 
+			"rxtx_factor": 3.0, 
+			"swap": 1024,
+			"vcpus": 1
+		}, {
+			"OS-FLV-DISABLED:disabled": false,
+			"disk": 80,
+			"id": "4",
+			"links": [
+				{
+					"href": "https://dfw.servers.api.rackspacecloud.com/v2/010101/flavors/4",
+					"ref": "self"
+				}, {
+					"href": "https://dfw.servers.api.rackspacecloud.com/010101/flavors/4",
+					"ref": "bookmark"
+				}
+			],
+			"name": "2GB Standard Instance",
+			"ram": 2048, 
+			"rxtx_factor": 3.0, 
+			"swap": 1024,
+			"vcpus": 1
+		}
+	]
+}`
 )
 
 // testTransport is used to intercept traffic that would normally go out over a network connection.
@@ -222,30 +264,53 @@ func withAuthentication(c *http.Client, f func(e error, id identity.Identity)) {
 	f(nil, id)
 }
 
+// withRegion finds a known region and
+// configures the transport for the (anticipated) next step in the testing process.
+func withRegion(err error, id identity.Identity, cl *http.Client, t *testTransport, r string, f func(err error, _ Region)) {
+	if err != nil {
+		f(err, nil)
+		return
+	}
+	region, err := RegionByName(id, "dfw")
+	if err != nil {
+		f(err, nil)
+		return
+	}
+	region.UseClient(cl)
+	t.response = r
+	f(nil, region)
+}
+
 /****** Unit Tests ******/
 
 func TestEndpointByName(t *testing.T) {
 	withTestTransport(SUCCESSFUL_LOGIN_RESPONSE, func(client *http.Client, transport *testTransport) {
 		withAuthentication(client, func(err error, id identity.Identity) {
-			if err != nil {
-				t.Error(err)
-				return
-			}
+			withRegion(err, id, client, transport, "", func(err error, region Region) {
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				api, err := region.EndpointByName("images")
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if api != "https://dfw.servers.api.rackspacecloud.com/v2/12345/images" {
+					t.Error("Expected DFW cloud server API for images; got", api)
+					return
+				}
 
-			region, err := RegionByName(id, "dfw")
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			api, err := region.EndpointByName("images")
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			if api != "https://dfw.servers.api.rackspacecloud.com/v2/12345/images" {
-				t.Error("Expected DFW cloud server API for images; got", api)
-				return
-			}
+				api, err = region.EndpointByName("flavors")
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if api != "https://dfw.servers.api.rackspacecloud.com/v2/12345/flavors" {
+					t.Error("Expected DFW cloud server API for flavors; got", api)
+					return
+				}
+			})
 		})
 	})
 }
@@ -253,30 +318,47 @@ func TestEndpointByName(t *testing.T) {
 func TestImages(t *testing.T) {
 	withTestTransport(SUCCESSFUL_LOGIN_RESPONSE, func(client *http.Client, transport *testTransport) {
 		withAuthentication(client, func(err error, id identity.Identity) {
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			region, err := RegionByName(id, "dfw")
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			region.UseClient(client)
-			transport.response = TWO_IMAGES
-			imgs, err := region.Images()
-			if err != nil {
-				t.Error(err)
-				return
-			}
-			if len(imgs) != 2 {
-				t.Error("Expected 2 images; got", len(imgs))
-				return
-			}
-			if !transport.seenXAuthToken {
-				t.Error("Expected X-Auth-Token header to be sent")
-				return
-			}
+			withRegion(err, id, client, transport, TWO_IMAGES, func(err error, region Region) {
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				imgs, err := region.Images()
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(imgs) != 2 {
+					t.Error("Expected 2 images; got", len(imgs))
+					return
+				}
+				if !transport.seenXAuthToken {
+					t.Error("Expected X-Auth-Token header to be sent")
+					return
+				}
+			})
+		})
+	})
+}
+
+func TestFlavors(t *testing.T) {
+	withTestTransport(SUCCESSFUL_LOGIN_RESPONSE, func(client *http.Client, transport *testTransport) {
+		withAuthentication(client, func(err error, id identity.Identity) {
+			withRegion(err, id, client, transport, TWO_FLAVORS, func(err error, region Region) {
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				flavors, err := region.Flavors()
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if len(flavors) != 2 {
+					t.Error("Expected 2 flavors; got", len(flavors))
+					return
+				}
+			})
 		})
 	})
 }

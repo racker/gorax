@@ -28,13 +28,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	images, err := region.Images()
+	flavors, err := region.Flavors()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Printf("ID,Name\n")
-	for _, i := range images {
-		fmt.Printf("%s,\"%s\"\n", i.Id, i.Name)
+	for _, f := range flavors {
+		fmt.Printf("%s,\"%s\"\n", f.Id, f.Name)
 	}
 }

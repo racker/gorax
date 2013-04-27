@@ -9,6 +9,7 @@ import (
 // A Region represents a geographical area with cloud computing resources.
 type Region interface {
 	Images() ([]Image, error)
+	Flavors() ([]Flavor, error)
 	UseClient(*http.Client)
 	EndpointByName(string) (string, error)
 }
