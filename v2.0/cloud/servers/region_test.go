@@ -310,6 +310,16 @@ func TestEndpointByName(t *testing.T) {
 					t.Error("Expected DFW cloud server API for flavors; got", api)
 					return
 				}
+
+				api, err = region.EndpointByName("servers")
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				if api != "https://dfw.servers.api.rackspacecloud.com/v2/12345/servers" {
+					t.Error("Expected DFW cloud server API for servers; got", api)
+					return
+				}
 			})
 		})
 	})

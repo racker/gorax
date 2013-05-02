@@ -3,11 +3,10 @@
 package servers
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/racker/gorax/v2.0/identity"
-	"io/ioutil"
 	"net/http"
+	"github.com/racker/gorax/v2.0/identity"
+	"github.com/racker/perigee"
 )
 
 // A raxRegion represents a Rackspace-hosted region.
@@ -18,134 +17,62 @@ type raxRegion struct {
 	token         string
 }
 
-// ImagesContainer is used for JSON (un)marshalling.
-// It provides the top-most container for image records.
-type ImagesContainer struct {
-	Images []Image `json:"images"`
-}
-
-// Link is used for JSON (un)marshalling.
-// It provides RESTful links to a resource.
-type Link struct {
-	Href string `json:"href"`
-	Rel  string `json:"rel"`
-	Type string `json:"type"`
-}
-
-// Image is used for JSON (un)marshalling.
-// It provides a description of an OS image.
-//
-// The Id field contains the image's unique identifier.
-// For example, this identifier will be useful for specifying which operating system to install on a new server instance.
-//
-// The MinDisk and MinRam fields specify the minimum resources a server must provide to be able to install the image.
-//
-// The Name field provides a human-readable moniker for the OS image.
-//
-// The Progress and Status fields indicate image-creation status.
-// Any usable image will have 100% progress.
-//
-// The Updated field indicates the last time this image was changed.
-type Image struct {
-	OS_DCF_diskConfig string `json:"OS-DCF:diskConfig"`
-	Created           string `json:"created"`
-	Id                string `json:"id"`
-	Links             []Link `json:"links"`
-	MinDisk           int    `json:"minDisk"`
-	MinRam            int    `json:"minRam"`
-	Name              string `json:"name"`
-	Progress          int    `json:"progress"`
-	Status            string `json:"status"`
-	Updated           string `json:"updated"`
-}
-
-// FlavorsContainer is used for JSON (un)marshalling.
-// It provides the top-most container for flavor records.
-type FlavorsContainer struct {
-	Flavors []Flavor `json:"flavors"`
-}
-
-// Flavor records represent (virtual) hardware configurations for server resources in a region.
-//
-// The Id field contains the flavor's unique identifier.
-// For example, this identifier will be useful when specifying which hardware configuration to use for a new server instance.
-//
-// The Disk and Ram fields provide a measure of storage space offered by the flavor, in GB and MB, respectively.
-//
-// The Name field provides a human-readable moniker for the flavor.
-//
-// Swap indicates how much space is reserved for swap.
-// If not provided, this field will be set to 0.
-//
-// VCpus indicates how many (virtual) CPUs are available for this flavor.
-type Flavor struct {
-	OS_FLV_DISABLED_disabled bool    `json:"OS-FLV-DISABLED:disabled"`
-	Disk                     int     `json:"disk"`
-	Id                       string  `json:"id"`
-	Links                    []Link  `json:"links"`
-	Name                     string  `json:"name"`
-	Ram                      int     `json:"ram"`
-	RxTxFactor               float64 `json:"rxtx_factor"`
-	Swap                     int     `json:"swap"`
-	VCpus                    int     `json:"vcpus"`
-}
-
 // Flavors method provides a complete list of machine configurations (called flavors) available at the region.
 func (r *raxRegion) Flavors() ([]Flavor, error) {
-	var flavors FlavorsContainer
+	var fc *FlavorsContainer
+	var fs []Flavor
 
-	apiUrl, _ := r.EndpointByName("flavors")
-	req, err := http.NewRequest("GET", apiUrl, nil)
-	if err != nil {
-		return nil, err
+	url, _ := r.EndpointByName("flavors")
+	err := perigee.Get(url, perigee.Options{
+		CustomClient: r.httpClient,
+		Results: &fc,
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
+	})
+	if err == nil {
+		fs = fc.Flavors
 	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("X-Auth-Token", r.token)
-
-	rsp, err := r.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if rsp.StatusCode != 200 {
-		return nil, fmt.Errorf("200 OK expected; got %s", rsp.Status)
-	}
-	defer rsp.Body.Close()
-	jsonContainer, err := ioutil.ReadAll(rsp.Body)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(jsonContainer, &flavors)
-	return flavors.Flavors, err
+	return fs, err
 }
 
 // Images method provides a complete list of images hosted at the region.
 func (r *raxRegion) Images() ([]Image, error) {
-	var images ImagesContainer
+	var ic *ImagesContainer
+	var is []Image
 
-	apiUrl, _ := r.EndpointByName("images")
-	req, err := http.NewRequest("GET", apiUrl, nil)
-	if err != nil {
-		return nil, err
+	url, _ := r.EndpointByName("images")
+	err := perigee.Get(url, perigee.Options{
+		CustomClient: r.httpClient,
+		Results: &ic,
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
+	})
+	if err == nil {
+		is = ic.Images
 	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("X-Auth-Token", r.token)
+	return is, err
+}
 
-	rsp, err := r.httpClient.Do(req)
-	if err != nil {
-		return nil, err
+// Servers method provides a complete list of servers hosted by the user
+// at a given region.
+func (r *raxRegion) Servers() ([]Server, error) {
+	var sc *ServersContainer
+	var ss []Server
+
+	url, _ := r.EndpointByName("servers")
+	err := perigee.Get(url, perigee.Options{
+		CustomClient: r.httpClient,
+		Results: &sc,
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
+	})
+	if err == nil {
+		ss = sc.Servers
 	}
-	if rsp.StatusCode != 200 {
-		return nil, fmt.Errorf("200 OK expected; got %s", rsp.Status)
-	}
-	defer rsp.Body.Close()
-	jsonContainer, err := ioutil.ReadAll(rsp.Body)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(jsonContainer, &images)
-	return images.Images, err
+	return ss, err
 }
 
 // EndpointByName computes a resource URL, assuming a valid name.
@@ -157,6 +84,7 @@ func (r *raxRegion) EndpointByName(name string) (string, error) {
 	var supportedEndpoint map[string]bool = map[string]bool{
 		"images":  true,
 		"flavors": true,
+		"servers": true,
 	}
 
 	if supportedEndpoint[name] {

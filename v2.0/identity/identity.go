@@ -3,11 +3,10 @@
 package identity
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
+	"github.com/racker/perigee"
 )
 
 const (
@@ -227,34 +226,16 @@ func (id *identity) Authenticate() error {
 			},
 		},
 	}
-	bodyContent, err := json.Marshal(creds)
-	if err != nil {
-		return err
-	}
-	body := strings.NewReader(string(bodyContent))
-	req, err := http.NewRequest("POST", id.AuthEndpoint(), body)
-	if err != nil {
-		return err
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	resp, err := id.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Expected 200 response; got %s", resp.Status)
-	}
-	defer resp.Body.Close()
-	jsonContainer, err := ioutil.ReadAll(resp.Body)
 
+	err := perigee.Post(id.AuthEndpoint(), perigee.Options{
+		CustomClient: id.httpClient,
+		ReqBody: creds,
+		Results: &id.access,
+	})
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(jsonContainer, &id.access)
-	if err != nil {
-		return err
-	}
+
 	id.isAuthenticated = true
 	id.token = id.access.Access.Token.Id
 	id.expires = id.access.Access.Token.Expires
