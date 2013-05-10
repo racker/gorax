@@ -11,6 +11,7 @@ type Region interface {
 	Images() ([]Image, error)
 	Flavors() ([]Flavor, error)
 	Servers() ([]Server, error)
+	CreateServer(NewServer) (*NewServer, error)
 	UseClient(*http.Client)
 	EndpointByName(string) (string, error)
 }
