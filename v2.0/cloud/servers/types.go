@@ -29,6 +29,13 @@ type NewServerContainer struct {
 	Server NewServer `json:"server"`
 }
 
+// ServerInfoContainer is used for JSON (un)marshalling.
+// It provides the top-most container for a single server instance.
+// Contrast with ServersContainer, which is used for (potentially) a plurality of server records.
+type ServerInfoContainer struct {
+	Server	Server	`json:"server"`
+}
+
 /*** Common Sub-elements ***/
 
 // Link is used for JSON (un)marshalling.
