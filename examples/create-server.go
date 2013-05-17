@@ -3,12 +3,12 @@
 package main
 
 import (
-	"fmt"
-	"flag"
-	"log"
 	"encoding/json"
-	"github.com/racker/gorax/v2.0/identity"
+	"flag"
+	"fmt"
 	"github.com/racker/gorax/v2.0/cloud/servers"
+	"github.com/racker/gorax/v2.0/identity"
+	"log"
 )
 
 var userName = flag.String("u", "", "Rackspace account username")
@@ -19,16 +19,15 @@ var imageRef = flag.String("i", "", "Image ID to deploy onto the server")
 var flavorRef = flag.String("f", "", "Flavor of server to deploy image upon")
 var adminPass = flag.String("a", "", "Administrator password (auto-assigned if none)")
 
-
 func main() {
 	flag.Parse()
 
-	validations := map[string]string {
-		"a username (-u flag)": *userName,
-		"a password (-p flag)": *passWord,
-		"a server name (-n flag)": *serverName,
+	validations := map[string]string{
+		"a username (-u flag)":         *userName,
+		"a password (-p flag)":         *passWord,
+		"a server name (-n flag)":      *serverName,
 		"an image reference (-i flag)": *imageRef,
-		"a server flavor (-f flag)": *flavorRef,
+		"a server flavor (-f flag)":    *flavorRef,
 	}
 	for flag, value := range validations {
 		if value == "" {
@@ -47,9 +46,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	nsr, err := region.CreateServer(servers.NewServer {
-		Name: *serverName,
-		ImageRef: *imageRef,
+	nsr, err := region.CreateServer(servers.NewServer{
+		Name:      *serverName,
+		ImageRef:  *imageRef,
 		FlavorRef: *flavorRef,
 		AdminPass: *adminPass,
 	})
@@ -62,7 +61,6 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf("%s\n", string(nscJson))
-
 
 	servers, err := region.Servers()
 	if err != nil {

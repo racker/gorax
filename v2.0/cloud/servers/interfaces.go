@@ -13,6 +13,7 @@ type Region interface {
 	Servers() ([]Server, error)
 	CreateServer(NewServer) (*NewServer, error)
 	ServerInfoById(string) (*Server, error)
+	DeleteServerById(string) error
 	UseClient(*http.Client)
 	EndpointByName(string) (string, error)
 }

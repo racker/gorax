@@ -85,7 +85,7 @@ func (r *raxRegion) Servers() ([]Server, error) {
 // the only time this happens; no other means exists in the public API
 // to acquire a password for a pre-existing server.
 func (r *raxRegion) CreateServer(ns NewServer) (*NewServer, error) {
-	var ns *NewServer
+	var s *NewServer
 
 	nsc := &NewServerContainer{
 		Server: ns,
@@ -104,9 +104,9 @@ func (r *raxRegion) CreateServer(ns NewServer) (*NewServer, error) {
 		OkCodes: []int{202},
 	})
 	if err == nil {
-		ns = &nsr.Server
+		s = &nsr.Server
 	}
-	return ns, err
+	return s, err
 }
 
 // ServerInfoById provides the complete server information record
@@ -127,6 +127,20 @@ func (r *raxRegion) ServerInfoById(id string) (*Server, error) {
 		s = &serverEnvelop.Server
 	}
 	return s, err
+}
+
+// DeleteServerById requests that the server with the specified ID
+// be removed from your account.  The delete happens asynchronously.
+func (r *raxRegion) DeleteServerById(id string) error {
+	baseUrl, err := r.EndpointByName("servers")
+	serverUrl := fmt.Sprintf("%s/%s", baseUrl, id)
+	err = perigee.Delete(serverUrl, perigee.Options{
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
+		OkCodes: []int{204},
+	})
+	return err
 }
 
 // EndpointByName computes a resource URL, assuming a valid name.
