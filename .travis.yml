@@ -5,6 +5,7 @@ branches:
    - working
 install:
  - go get github.com/racker/perigee
+ - go get github.com/racker/gorax
 script:
  - go test -v github.com/racker/gorax/v2.0/identity
  - go test -v github.com/racker/gorax/v2.0/cloud/servers
