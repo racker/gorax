@@ -2,40 +2,6 @@
 
 package servers
 
-/*** Top-level JSON Containers ***/
-
-// ImagesContainer is used for JSON (un)marshalling.
-// It provides the top-most container for image records.
-type ImagesContainer struct {
-	Images []Image `json:"images"`
-}
-
-// FlavorsContainer is used for JSON (un)marshalling.
-// It provides the top-most container for flavor records.
-type FlavorsContainer struct {
-	Flavors []Flavor `json:"flavors"`
-}
-
-// ServersContainer is used for JSON (un)marshalling.
-// It provides the top-most container for server records.
-type ServersContainer struct {
-	Servers []Server `json:"servers"`
-}
-
-// NewServerContainer is used for JSON (un)marshalling.
-// It provides the top-most container for server records when, e.g., creating new servers or
-// gaining information about a specific server.
-type NewServerContainer struct {
-	Server NewServer `json:"server"`
-}
-
-// ServerInfoContainer is used for JSON (un)marshalling.
-// It provides the top-most container for a single server instance.
-// Contrast with ServersContainer, which is used for (potentially) a plurality of server records.
-type ServerInfoContainer struct {
-	Server Server `json:"server"`
-}
-
 /*** Common Sub-elements ***/
 
 // Link is used for JSON (un)marshalling.

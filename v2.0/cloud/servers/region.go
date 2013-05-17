@@ -19,59 +19,46 @@ type raxRegion struct {
 
 // Flavors method provides a complete list of machine configurations (called flavors) available at the region.
 func (r *raxRegion) Flavors() ([]Flavor, error) {
-	var fc *FlavorsContainer
 	var fs []Flavor
 
 	url, _ := r.EndpointByName("flavors")
 	err := perigee.Get(url, perigee.Options{
 		CustomClient: r.httpClient,
-		Results:      &fc,
+		Results:      &struct{ Flavors *[]Flavor }{&fs},
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
 		},
 	})
-	if err == nil {
-		fs = fc.Flavors
-	}
 	return fs, err
 }
 
 // Images method provides a complete list of images hosted at the region.
 func (r *raxRegion) Images() ([]Image, error) {
-	var ic *ImagesContainer
 	var is []Image
-
 	url, _ := r.EndpointByName("images")
 	err := perigee.Get(url, perigee.Options{
 		CustomClient: r.httpClient,
-		Results:      &ic,
+		Results: &struct{ Images *[]Image }{&is},
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
 		},
 	})
-	if err == nil {
-		is = ic.Images
-	}
 	return is, err
 }
 
 // Servers method provides a complete list of servers hosted by the user
 // at a given region.
 func (r *raxRegion) Servers() ([]Server, error) {
-	var sc *ServersContainer
 	var ss []Server
 
 	url, _ := r.EndpointByName("servers")
 	err := perigee.Get(url, perigee.Options{
 		CustomClient: r.httpClient,
-		Results:      &sc,
+		Results:      &struct{ Servers *[]Server }{&ss},
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
 		},
 	})
-	if err == nil {
-		ss = sc.Servers
-	}
 	return ss, err
 }
 
@@ -87,45 +74,34 @@ func (r *raxRegion) Servers() ([]Server, error) {
 func (r *raxRegion) CreateServer(ns NewServer) (*NewServer, error) {
 	var s *NewServer
 
-	nsc := &NewServerContainer{
-		Server: ns,
-	}
 	ep, err := r.EndpointByName("servers")
 	if err != nil {
 		return nil, err
 	}
-	nsr := new(NewServerContainer)
 	err = perigee.Post(ep, perigee.Options{
-		ReqBody: nsc,
-		Results: nsr,
+		ReqBody: &struct{ Server *NewServer `json:"server"` }{&ns},
+		Results: &struct{ Server **NewServer }{&s},
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
 		},
 		OkCodes: []int{202},
 	})
-	if err == nil {
-		s = &nsr.Server
-	}
 	return s, err
 }
 
 // ServerInfoById provides the complete server information record
 // given you know its unique ID.
 func (r *raxRegion) ServerInfoById(id string) (*Server, error) {
-	var serverEnvelop *ServerInfoContainer
 	var s *Server
 
 	baseUrl, err := r.EndpointByName("servers")
 	serverUrl := fmt.Sprintf("%s/%s", baseUrl, id)
 	err = perigee.Get(serverUrl, perigee.Options{
-		Results: &serverEnvelop,
+		Results: &struct{ Server **Server }{&s},
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
 		},
 	})
-	if err == nil {
-		s = &serverEnvelop.Server
-	}
 	return s, err
 }
 
