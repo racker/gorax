@@ -4,9 +4,9 @@ package identity
 
 import (
 	"fmt"
+	"github.com/racker/perigee"
 	"net/http"
 	"strings"
-	"github.com/racker/perigee"
 )
 
 const (
@@ -229,8 +229,8 @@ func (id *identity) Authenticate() error {
 
 	err := perigee.Post(id.AuthEndpoint(), perigee.Options{
 		CustomClient: id.httpClient,
-		ReqBody: creds,
-		Results: &id.access,
+		ReqBody:      creds,
+		Results:      &id.access,
 	})
 	if err != nil {
 		return err

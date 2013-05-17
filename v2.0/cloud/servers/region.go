@@ -85,6 +85,8 @@ func (r *raxRegion) Servers() ([]Server, error) {
 // the only time this happens; no other means exists in the public API
 // to acquire a password for a pre-existing server.
 func (r *raxRegion) CreateServer(ns NewServer) (*NewServer, error) {
+	var ns *NewServer
+
 	nsc := &NewServerContainer{
 		Server: ns,
 	}
@@ -101,7 +103,30 @@ func (r *raxRegion) CreateServer(ns NewServer) (*NewServer, error) {
 		},
 		OkCodes: []int{202},
 	})
-	return &nsr.Server, err
+	if err == nil {
+		ns = &nsr.Server
+	}
+	return ns, err
+}
+
+// ServerInfoById provides the complete server information record
+// given you know its unique ID.
+func (r *raxRegion) ServerInfoById(id string) (*Server, error) {
+	var serverEnvelop *ServerInfoContainer
+	var s *Server
+
+	baseUrl, err := r.EndpointByName("servers")
+	serverUrl := fmt.Sprintf("%s/%s", baseUrl, id)
+	err = perigee.Get(serverUrl, perigee.Options{
+		Results: &serverEnvelop,
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
+	})
+	if err == nil {
+		s = &serverEnvelop.Server
+	}
+	return s, err
 }
 
 // EndpointByName computes a resource URL, assuming a valid name.
