@@ -14,6 +14,7 @@ type Region interface {
 	CreateServer(NewServer) (*NewServer, error)
 	ServerInfoById(string) (*Server, error)
 	DeleteServerById(string) error
+	SetAdminPassword(string, string) error
 	UseClient(*http.Client)
 	EndpointByName(string) (string, error)
 }

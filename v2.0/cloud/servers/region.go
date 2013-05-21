@@ -38,7 +38,7 @@ func (r *raxRegion) Images() ([]Image, error) {
 	url, _ := r.EndpointByName("images")
 	err := perigee.Get(url, perigee.Options{
 		CustomClient: r.httpClient,
-		Results: &struct{ Images *[]Image }{&is},
+		Results:      &struct{ Images *[]Image }{&is},
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
 		},
@@ -79,7 +79,9 @@ func (r *raxRegion) CreateServer(ns NewServer) (*NewServer, error) {
 		return nil, err
 	}
 	err = perigee.Post(ep, perigee.Options{
-		ReqBody: &struct{ Server *NewServer `json:"server"` }{&ns},
+		ReqBody: &struct {
+			Server *NewServer `json:"server"`
+		}{&ns},
 		Results: &struct{ Server **NewServer }{&s},
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
@@ -115,6 +117,35 @@ func (r *raxRegion) DeleteServerById(id string) error {
 			"X-Auth-Token": r.token,
 		},
 		OkCodes: []int{204},
+	})
+	return err
+}
+
+// SetAdminPassword requests that the server with the specified ID
+// have its administrative password changed.  For Linux, BSD, or other
+// pure-POSIX-compliant systems, this administrator corresponds to the
+// root user.  For Windows machines, the Administrator user will be
+// affected.
+func (r *raxRegion) SetAdminPassword(id string, pw string) error {
+	ep, err := r.EndpointByName("servers")
+	if err != nil {
+		return err
+	}
+	endpoint := fmt.Sprintf("%s/%s/action", ep, id)
+	err = perigee.Post(endpoint, perigee.Options{
+		ReqBody: &struct {
+			ChangePassword struct {
+				AdminPass string `json:"adminPass"`
+			} `json:"changePassword"`
+		}{
+			struct {
+				AdminPass string `json:"adminPass"`
+			}{pw},
+		},
+		OkCodes: []int{202},
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
 	})
 	return err
 }
