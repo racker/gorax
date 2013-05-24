@@ -121,7 +121,6 @@ func (r *raxRegion) DeleteServerById(id string) error {
 	return err
 }
 
-
 // SetAdminPassword requests that the server with the specified ID
 // have its administrative password changed.  For Linux, BSD, or other
 // pure-POSIX-compliant systems, this administrator corresponds to the
@@ -181,6 +180,28 @@ func (r *raxRegion) RebootServer(id string, isHard bool) error {
 		},
 	})
 	return err
+}
+
+// RebuildServer removes all data on the server and replaces it with the specified image
+// on the specified flavor.
+func (r *raxRegion) RebuildServer(id string, ns NewServer) (*Server, error) {
+	var s *Server
+	baseUrl, err := r.EndpointByName("servers")
+	serverUrl := fmt.Sprintf("%s/%s/action", baseUrl, id)
+	err = perigee.Post(serverUrl, perigee.Options{
+		ReqBody: &struct {
+			Rebuild NewServer `json:"rebuild"`
+		}{Rebuild: ns},
+		Results: &struct {
+			Server **Server `json:"server"`
+		}{&s},
+		OkCodes: []int{202},
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
+		DumpReqJson: true,
+	})
+	return s, err
 }
 
 // EndpointByName computes a resource URL, assuming a valid name.

@@ -16,6 +16,7 @@ type Region interface {
 	RebootServer(string, bool) error
 	DeleteServerById(string) error
 	SetAdminPassword(string, string) error
+	RebuildServer(string, NewServer) (*Server, error)
 	UseClient(*http.Client)
 	EndpointByName(string) (string, error)
 }
