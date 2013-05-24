@@ -304,3 +304,12 @@ type RaxBandwidth struct {
 	BandwidthOutbound int64  `json:"bandwidth_outbound"`
 	Interface         string `json:"interface"`
 }
+
+// ResizeRequest structures are used internally to encode to JSON the parameters required to resize a server instance.
+// Client applications will not use this structure (no API accepts an instance of this structure).
+// See the Region method ResizeServer() for more details on how to resize a server.
+type ResizeRequest struct {
+	Name       string `json:"name"`
+	FlavorRef  string `json:"flavorRef"`
+	DiskConfig string `json:"diskConfig"`
+}

@@ -14,6 +14,7 @@ type Region interface {
 	CreateServer(NewServer) (*NewServer, error)
 	ServerInfoById(string) (*Server, error)
 	RebootServer(string, bool) error
+	ResizeServer(string, string, string, string) error
 	DeleteServerById(string) error
 	SetAdminPassword(string, string) error
 	RebuildServer(string, NewServer) (*Server, error)

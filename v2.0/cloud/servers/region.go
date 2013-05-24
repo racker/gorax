@@ -204,6 +204,29 @@ func (r *raxRegion) RebuildServer(id string, ns NewServer) (*Server, error) {
 	return s, err
 }
 
+// ResizeServer can be a short-hand for RebuildServer where only the size of the server
+// changes.
+func (r *raxRegion) ResizeServer(id, name, flavor, diskConfig string) error {
+	baseUrl, err := r.EndpointByName("servers")
+	serverUrl := fmt.Sprintf("%s/%s/action", baseUrl, id)
+	rr := ResizeRequest{
+		Name:       name,
+		FlavorRef:  flavor,
+		DiskConfig: diskConfig,
+	}
+	err = perigee.Post(serverUrl, perigee.Options{
+		ReqBody: &struct {
+			Resize ResizeRequest `json:"resize"`
+		}{rr},
+		OkCodes: []int{202},
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
+		DumpReqJson: true,
+	})
+	return err
+}
+
 // EndpointByName computes a resource URL, assuming a valid name.
 // An error is returned if an invalid or unsupported endpoint name is given.
 //
