@@ -20,10 +20,10 @@ func main() {
 	flag.Parse()
 
 	validations := map[string]string{
-		"a username (-u flag)":         *userName,
-		"a password (-p flag)":         *passWord,
+		"a username (-u flag)":                *userName,
+		"a password (-p flag)":                *passWord,
 		"a password for the server (-w flag)": *newPassword,
-		"a server ID (-i flag)":	*serverId,
+		"a server ID (-i flag)":               *serverId,
 	}
 	for flag, value := range validations {
 		if value == "" {
