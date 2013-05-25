@@ -199,13 +199,15 @@ func (r *raxRegion) RebuildServer(id string, ns NewServer) (*Server, error) {
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
 		},
-		DumpReqJson: true,
 	})
 	return s, err
 }
 
 // ResizeServer can be a short-hand for RebuildServer where only the size of the server
-// changes.
+// changes.  Note that after the resize operation is requested, you will need to confirm
+// the resize has completed for changes to take effect permanently.  Changes will assume
+// to be confirmed even without an explicit confirmation after 24 hours from the initial
+// request.
 func (r *raxRegion) ResizeServer(id, name, flavor, diskConfig string) error {
 	baseUrl, err := r.EndpointByName("servers")
 	serverUrl := fmt.Sprintf("%s/%s/action", baseUrl, id)
@@ -222,7 +224,22 @@ func (r *raxRegion) ResizeServer(id, name, flavor, diskConfig string) error {
 		MoreHeaders: map[string]string{
 			"X-Auth-Token": r.token,
 		},
-		DumpReqJson: true,
+	})
+	return err
+}
+
+// ConfirmResizeServer will acknowledge a server's resized configuration.
+func (r *raxRegion) ConfirmResizeServer(id string) error {
+	baseUrl, err := r.EndpointByName("servers")
+	serverUrl := fmt.Sprintf("%s/%s/action", baseUrl, id)
+	err = perigee.Post(serverUrl, perigee.Options{
+		ReqBody: &struct {
+			ConfirmResize *int `json:"confirmResize"`
+		}{nil},
+		OkCodes: []int{204},
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
 	})
 	return err
 }

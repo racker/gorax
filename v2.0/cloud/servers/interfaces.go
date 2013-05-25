@@ -18,6 +18,7 @@ type Region interface {
 	DeleteServerById(string) error
 	SetAdminPassword(string, string) error
 	RebuildServer(string, NewServer) (*Server, error)
+	ConfirmResizeServer(string) error
 	UseClient(*http.Client)
 	EndpointByName(string) (string, error)
 }

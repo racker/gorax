@@ -47,7 +47,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err := region.RebuildServer(*serverId, servers.NewServer{
+	_, err = region.RebuildServer(*serverId, servers.NewServer{
 		Name:      *serverName,
 		ImageRef:  *imageId,
 		FlavorRef: *flavorId,
