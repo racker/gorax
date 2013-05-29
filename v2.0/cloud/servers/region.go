@@ -244,6 +244,23 @@ func (r *raxRegion) ConfirmResizeServer(id string) error {
 	return err
 }
 
+// RevertResizeServer will reject a server's resized configuration, thus
+// rolling back to the original server.
+func (r *raxRegion) RevertResizeServer(id string) error {
+	baseUrl, err := r.EndpointByName("servers")
+	serverUrl := fmt.Sprintf("%s/%s/action", baseUrl, id)
+	err = perigee.Post(serverUrl, perigee.Options{
+		ReqBody: &struct {
+			RevertResize *int `json:"revertResize"`
+		}{nil},
+		OkCodes: []int{204},
+		MoreHeaders: map[string]string{
+			"X-Auth-Token": r.token,
+		},
+	})
+	return err
+}
+
 // EndpointByName computes a resource URL, assuming a valid name.
 // An error is returned if an invalid or unsupported endpoint name is given.
 //

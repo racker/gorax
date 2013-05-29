@@ -16,6 +16,8 @@ var passWord = flag.String("p", "", "Rackspace account password (required)")
 var region = flag.String("r", "DFW", "Rackspace region in which to create the server")
 var serverId = flag.String("i", "", "ID of server to resize (required)")
 var wait = flag.Bool("w", false, "Wait for server to become ready for confirmation first")
+var revert = flag.Bool("revert", false, "Specify this flag if you wish to revert the resize.")
+
 
 func waitForServer(region servers.Region, id string) error {
 	ok := map[string]bool{
@@ -79,7 +81,11 @@ func main() {
 		}
 	}
 
-	err = region.ConfirmResizeServer(*serverId)
+	if *revert {
+		err = region.RevertResizeServer(*serverId)
+	} else {
+		err = region.ConfirmResizeServer(*serverId)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}

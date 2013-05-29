@@ -19,6 +19,7 @@ type Region interface {
 	SetAdminPassword(string, string) error
 	RebuildServer(string, NewServer) (*Server, error)
 	ConfirmResizeServer(string) error
+	RevertResizeServer(string) error
 	UseClient(*http.Client)
 	EndpointByName(string) (string, error)
 }
