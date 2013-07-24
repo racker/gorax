@@ -33,8 +33,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("ID,Name\n")
+	fmt.Printf("ID,Name,IPv4,Status,Progress\n")
 	for _, i := range servers {
-		fmt.Printf("%s,\"%s\"\n", i.Id, i.Name)
+		fmt.Printf("%s,\"%s\",%s,%s,%d\n", i.Id, i.Name, i.AccessIPv4, i.Status, i.Progress)
 	}
 }

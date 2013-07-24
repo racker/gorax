@@ -51,7 +51,7 @@ func (r *raxRegion) Images() ([]Image, error) {
 func (r *raxRegion) Servers() ([]Server, error) {
 	var ss []Server
 
-	url, _ := r.EndpointByName("servers")
+	url, _ := r.EndpointByName("servers/detail")
 	err := perigee.Get(url, perigee.Options{
 		CustomClient: r.httpClient,
 		Results:      &struct{ Servers *[]Server }{&ss},
@@ -271,6 +271,7 @@ func (r *raxRegion) EndpointByName(name string) (string, error) {
 		"images":  true,
 		"flavors": true,
 		"servers": true,
+		"servers/detail": true,
 	}
 
 	if supportedEndpoint[name] {
