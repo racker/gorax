@@ -18,9 +18,10 @@ package identity
 
 import (
 	"fmt"
-	"github.com/racker/gorax"
 	"sync"
 	"time"
+
+	"github.com/racker/gorax"
 )
 
 var (
@@ -49,7 +50,7 @@ func MakeKeystonePasswordMiddleware(region string, username string, password str
 		expires:        time.Time{},
 		refreshLock:    sync.Mutex{},
 	}
-	m.keystoneClient.SetDebug(true)
+	m.keystoneClient.SetDebug(false)
 	return m
 }
 
@@ -62,7 +63,7 @@ func MakeKeystoneAPIKeyMiddleware(region string, username string, apiKey string)
 		expires:        time.Time{},
 		refreshLock:    sync.Mutex{},
 	}
-	m.keystoneClient.SetDebug(true)
+	m.keystoneClient.SetDebug(false)
 	return m
 }
 
